@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { Building2, Filter, RefreshCw, Search, X } from 'lucide-react';
 import Button from '../components/ui/Button';
 import ThemeToggle from '../components/ui/ThemeToggle';
@@ -14,6 +14,7 @@ import { CATEGORIES, DEPARTMENTS, SEVERITIES, categoryMeta } from '../constants'
 
 export default function OfficerDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [complaints, setComplaints] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,14 @@ export default function OfficerDashboard() {
   const departmentFilter = searchParams.get('department') || '';
   const statusFilter = searchParams.get('status') || '';
   const deptView = searchParams.get('view') === 'departments';
+
+  useEffect(() => {
+    if (!location.state?.fromSidebar) return;
+    setSearch('');
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.key]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 350);
@@ -102,7 +111,12 @@ export default function OfficerDashboard() {
             {CATEGORIES.map((c) => (
               <button
                 key={c.value}
-                onClick={() => { setFilter('category', c.value); setFilter('view', ''); }}
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.set('category', c.value);
+                  next.delete('view');
+                  setSearchParams(next, { replace: true });
+                }}
                 className="rounded-xl border border-line bg-card2/50 p-4 text-center transition hover:border-blue/40"
               >
                 <p className="font-display text-lg font-bold text-ink">{stats.byCategory[c.value] || 0}</p>
@@ -115,7 +129,7 @@ export default function OfficerDashboard() {
       )}
 
       {/* Filters */}
-      <div className="card flex flex-col gap-3 p-4">
+      <div id="complaints" className="card flex scroll-mt-24 flex-col gap-3 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sub" />

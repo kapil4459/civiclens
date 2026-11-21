@@ -1,14 +1,18 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Camera, ChevronsLeft, ChevronsRight, ClipboardList, Gauge, Home, LayoutGrid, Send } from 'lucide-react';
 
 const items = [
-  { to: '/dashboard', label: 'Overview', icon: Home, end: true },
-  { to: '/dashboard', label: 'All Complaints', icon: ClipboardList },
-  { to: '/dashboard?severity=Critical', label: 'Critical Issues', icon: Gauge },
-  { to: '/dashboard?view=departments', label: 'Department Categories', icon: LayoutGrid },
+  { to: '/dashboard', label: 'Overview', icon: Home, isActive: (params, hash) => !params.toString() && !hash },
+  { to: '/dashboard#complaints', label: 'All Complaints', icon: ClipboardList, isActive: (params, hash) => hash === '#complaints' },
+  { to: '/dashboard?severity=Critical', label: 'Critical Issues', icon: Gauge, isActive: (params) => params.get('severity') === 'Critical' },
+  { to: '/dashboard?view=departments', label: 'Department Categories', icon: LayoutGrid, isActive: (params) => params.get('view') === 'departments' },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const onDashboard = location.pathname === '/dashboard';
+
   return (
     <aside className={`card flex h-full flex-col p-4 transition-all duration-300 ${collapsed ? 'w-[4.5rem]' : 'w-60'}`}>
       <div className={`mb-6 flex items-center ${collapsed ? 'justify-center' : 'gap-2.5 px-2'}`}>
@@ -23,22 +27,24 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {items.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={label}
-            to={to}
-            end={end}
-            title={collapsed ? label : undefined}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+        {items.map(({ to, label, icon: Icon, isActive }) => {
+          const active = onDashboard && isActive(params, location.hash);
+          return (
+            <Link
+              key={label}
+              to={to}
+              state={{ fromSidebar: true }}
+              title={collapsed ? label : undefined}
+              aria-current={active ? 'page' : undefined}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                 collapsed ? 'justify-center' : ''
-              } ${isActive ? 'bg-blue/10 text-blue' : 'text-sub hover:bg-card2 hover:text-ink'}`
-            }
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            {!collapsed && label}
-          </NavLink>
-        ))}
+              } ${active ? 'bg-blue/10 text-blue' : 'text-sub hover:bg-card2 hover:text-ink'}`}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {!collapsed && label}
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="mt-auto border-t border-line pt-4">
