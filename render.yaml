@@ -1,0 +1,32 @@
+# Render Blueprint for the CivicLens API
+# Deploy: Render Dashboard → New → Blueprint → point at this repo.
+# Set the env vars below in the Render dashboard (do NOT commit real values).
+services:
+  - type: web
+    name: civiclens-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: CLIENT_URL
+        sync: false # set to your Vercel frontend URL, e.g. https://civiclens.vercel.app
+      - key: MONGODB_URI
+        sync: false # MongoDB Atlas connection string
+      - key: GEMINI_API_KEY
+        sync: false # Google AI Studio key
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      # Optional — leave unset to use local /uploads storage on Render's ephemeral disk
+      # - key: CLOUDINARY_CLOUD_NAME
+      #   sync: false
+      # - key: CLOUDINARY_API_KEY
+      #   sync: false
+      # - key: CLOUDINARY_API_SECRET
+      #   sync: false
