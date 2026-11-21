@@ -142,7 +142,7 @@ Indexes: `{severity, createdAt}`, `{category}`, text on `description`, `status`.
 
 ### Setup
 ```bash
-git clone <repo-url> && cd p2p
+git clone <repo-url> && cd CivicLens
 npm install                      # installs server + client workspaces
 
 # Backend env — copy and fill values
